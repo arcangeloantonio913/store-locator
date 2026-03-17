@@ -3,66 +3,418 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Brands | Store Locator Ufficiale</title>
+    <title>Timeless Luxury Agency | Rappresentanze Esclusive</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
     <style>
-        /* Variabili base per coerenza visiva */
+        /* --- ARCHITETTURA VISIVA PREMIUM --- */
         :root {
             --bg-black: #0a0a0a;
+            --bg-darker: #050505;
             --accent-gold: #d4af37;
             --dark-brown: #2d1b15;
             --text-light: #f4f4f4;
+            --text-muted: #a0a0a0;
         }
-        body {
+
+        * { box-sizing: border-box; }
+
+        body, html {
             margin: 0;
+            padding: 0;
             background-color: var(--bg-black);
             color: var(--text-light);
-            font-family: 'Helvetica Neue', Arial, sans-serif; /* Placeholder font */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.6;
+            scroll-behavior: smooth;
         }
+
+        /* --- SEZIONI --- */
         section {
             padding: 100px 20px;
             max-width: 1200px;
             margin: 0 auto;
         }
-        h1, h2, h3 { color: var(--accent-gold); }
-        .hero { min-height: 80vh; display: flex; align-items: center; justify-content: center; text-align: center; }
+
+        h1, h2, h3 { 
+            color: var(--accent-gold); 
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 0;
+        }
+        
+        h2 {
+            font-size: 32px;
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        /* --- NAVBAR --- */
+        header {
+            background-color: rgba(10, 10, 10, 0.95);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .logo-text {
+            color: var(--accent-gold); 
+            font-weight: 800; 
+            font-size: 22px; 
+            letter-spacing: 2px;
+        }
+        .nav-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            margin-left: 25px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--accent-gold); }
+
+        /* --- HERO --- */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: radial-gradient(circle at center, var(--dark-brown) 0%, var(--bg-darker) 100%);
+            padding-top: 80px;
+        }
+        .hero h1 {
+            font-size: clamp(32px, 5vw, 56px);
+            margin-bottom: 20px;
+            line-height: 1.1;
+        }
+        .hero p {
+            font-size: 18px;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 40px auto;
+        }
+        .btn-primary {
+            display: inline-block;
+            background: var(--accent-gold);
+            color: var(--bg-black);
+            padding: 16px 40px;
+            text-decoration: none;
+            font-weight: 800;
+            text-transform: uppercase;
+            border-radius: 4px;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            border: 1px solid var(--accent-gold);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+        }
+        .btn-primary:hover {
+            background: transparent;
+            color: var(--accent-gold);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        /* --- GRIGLIA MARCHI & LOGHI --- */
+        .brands-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 30px;
+            align-items: center;
+        }
+        .brand-item {
+            background-color: #151515;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            border-radius: 8px;
+            padding: 20px;
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+        }
+        .brand-item:hover {
+            border-color: var(--accent-gold);
+            background-color: #1a1a1a;
+        }
+        .brand-logo {
+            max-width: 80%;
+            max-height: 70px;
+            object-fit: contain;
+            transition: transform 0.4s ease;
+        }
+        .brand-item:hover .brand-logo {
+            transform: scale(1.08);
+        }
+        /* Filtro per forzare i loghi neri (Aquaforte, Garmin) a diventare bianchi */
+        .logo-white {
+            filter: brightness(0) invert(1);
+            opacity: 0.85;
+        }
+        .brand-item:hover .logo-white { opacity: 1; }
+
+        /* --- MAPPA STORE LOCATOR --- */
+        #map {
+            height: 65vh;
+            min-height: 500px;
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            z-index: 1;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+            background-color: var(--bg-darker);
+            color: var(--text-light);
+            border: 1px solid var(--accent-gold);
+        }
+        .leaflet-popup-content { margin: 18px; }
+        .popup-title {
+            color: var(--accent-gold);
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            padding-bottom: 6px;
+        }
+        .popup-address {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        .popup-brands {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+        .popup-brand-badge {
+            background: #1a1a1a;
+            color: var(--text-light);
+            border: 1px solid #333;
+            padding: 4px 8px;
+            font-size: 10px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+        .popup-btn {
+            display: block;
+            text-align: center;
+            background: var(--accent-gold);
+            color: var(--bg-black);
+            padding: 8px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 11px;
+            text-transform: uppercase;
+            transition: background 0.2s;
+        }
+        .popup-btn:hover { background: #e5c358; }
+        
+        .gold-marker {
+            background-color: var(--accent-gold);
+            width: 16px;
+            height: 16px;
+            display: block;
+            border-radius: 50%;
+            border: 3px solid var(--bg-black);
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.8);
+        }
+
+        /* --- FOOTER & CONTATTI --- */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            text-align: center;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            padding-top: 50px;
+        }
+        footer {
+            background-color: var(--bg-darker);
+            text-align: center;
+            padding: 40px 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .omnia-signature {
+            margin-top: 20px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #444;
+            font-size: 10px;
+        }
+
+        /* Responsive Navbar */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero h1 { font-size: 36px; }
+        }
     </style>
 </head>
 <body>
 
     <header>
         <nav>
-            </nav>
+            <div class="logo-text">TIMELESS LUXURY</div>
+            <div class="nav-links">
+                <a href="#chi-siamo">L'Agenzia</a>
+                <a href="#marchi">Marchi</a>
+                <a href="#locator">Boutique</a>
+                <a href="#contatti">Contatti</a>
+            </div>
+        </nav>
     </header>
 
     <section id="hero" class="hero">
         <div>
             <h1>L'Esecuzione dell'Eccellenza</h1>
-            <p>Selezioniamo e distribuiamo i migliori marchi sul territorio.</p>
-            <a href="#locator" style="color: var(--bg-black); background: var(--accent-gold); padding: 15px 30px; text-decoration: none; font-weight: bold; text-transform: uppercase;">Trova uno Store</a>
+            <p>Rappresentanze esclusive per l'alta orologeria e gioielleria in Sicilia. Selezioniamo solo il meglio per i nostri partner commerciali.</p>
+            <a href="#locator" class="btn-primary">Trova Rivenditore</a>
         </div>
     </section>
 
     <section id="chi-siamo">
         <h2>La Nostra Agenzia</h2>
-        </section>
+        <div style="text-align: center; max-width: 800px; margin: 0 auto; color: var(--text-muted); font-size: 16px;">
+            <p>Timeless Luxury Agency nasce con un obiettivo preciso: connettere i brand più prestigiosi a livello internazionale con le migliori boutique del territorio siciliano. Non ci limitiamo alla distribuzione, ma costruiamo partnership durature basate su esclusività, posizionamento e risultati commerciali.</p>
+        </div>
+    </section>
 
     <section id="marchi">
-        <h2>I Marchi Trattati</h2>
+        <h2>Portfolio Marchi</h2>
         <div class="brands-grid">
+            <div class="brand-item">
+                <img src="assets/logo-aquaforte.png" alt="Aquaforte" class="brand-logo logo-white">
             </div>
+            
+            <div class="brand-item">
+                <img src="assets/logo-milor.png" alt="Milor" class="brand-logo">
+            </div>
+            
+            <div class="brand-item">
+                <img src="assets/logo-burroni.png" alt="Giacomo Burroni" class="brand-logo">
+            </div>
+            
+            <div class="brand-item">
+                <img src="assets/logo-garmin.png" alt="Garmin" class="brand-logo logo-white">
+            </div>
+        </div>
     </section>
 
     <section id="locator">
-        <h2>Store Locator</h2>
-        </section>
+        <h2>Rete Autorizzata</h2>
+        <p style="text-align: center; color: var(--text-muted); margin-top: -30px; margin-bottom: 40px;">Seleziona un punto vendita sulla mappa per ottenere le indicazioni stradali.</p>
+        <div id="map"></div>
+    </section>
 
     <section id="contatti">
-        <h2>Contattaci</h2>
-        </section>
+        <h2>Entra in Contatto</h2>
+        <div class="contact-grid">
+            <div>
+                <h3 style="font-size: 16px; margin-bottom: 10px;">Indirizzo Sede</h3>
+                <p style="color: var(--text-muted);">Via Roma 1, Palermo (PA)<br>Sicilia, Italia</p>
+            </div>
+            <div>
+                <h3 style="font-size: 16px; margin-bottom: 10px;">Recapiti</h3>
+                <p style="color: var(--text-muted);">Email: info@timelessluxury.it<br>Telefono: +39 333 000 0000</p>
+            </div>
+        </div>
+    </section>
 
     <footer>
-        </footer>
+        <p>Timeless Luxury Agency - P.IVA XXXXXXXXXXX | Tutti i diritti riservati.</p>
+        <p class="omnia-signature">PROGETTATO E SVILUPPATO DA OMNIA</p>
+    </footer>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Inizializzazione mappa centrata sulla Sicilia
+        const map = L.map('map', { scrollWheelZoom: false }).setView([37.5999, 14.0153], 8);
+
+        // Layer Dark Mode Premium (CartoDB)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors © CARTO',
+            subdomains: 'abcd',
+            maxZoom: 20
+        }).addTo(map);
+
+        // Database Clienti (24 Sedi esatte)
+        const stores = [
+            { name: "Alfano Gioielleria", lat: 38.1648, lng: 13.3308, address: "Via Mater Dolorosa 1, 90146 Palermo", brands: ["Aquaforte", "Milor Jewels", "Giacomo Burroni"] },
+            { name: "Sutera Gioiellerie dal 1902", lat: 38.1278, lng: 13.3533, address: "Via Enrico Parisi 29, 90133 Palermo", brands: ["Aquaforte"] },
+            { name: "Santoro Gioielli", lat: 38.1065, lng: 13.3330, address: "Corso Calatafimi 494/496, 90129 Palermo", brands: ["Aquaforte"] },
+            { name: "Gioielleria Gagliano", lat: 38.1189, lng: 13.3468, address: "Corso Finocchiaro Aprile 95, 90138 Palermo", brands: ["Garmin", "Aquaforte", "Giacomo Burroni"] },
+            { name: "Gioielleria Gagliano", lat: 38.1245, lng: 13.3536, address: "Piazza Castelnuovo 9, 90100 Palermo", brands: ["Garmin", "Aquaforte", "Giacomo Burroni"] },
+            { name: "Gioielleria Scaduto", lat: 38.0776, lng: 13.5082, address: "Corso Umberto I 67, 90011 Bagheria (PA)", brands: ["Aquaforte", "Garmin", "Milor Jewels", "Giacomo Burroni"] },
+            { name: "Mediterranea Gioielli", lat: 38.0386, lng: 14.0228, address: "Corso Ruggero, 90015 Cefalù (PA)", brands: ["Aquaforte", "Milor Jewels", "Giacomo Burroni"] },
+            { name: "Gioielleria D'Amico", lat: 38.0773, lng: 13.4444, address: "Viale Europa 188, 90039 Villabate (PA)", brands: ["Aquaforte"] },
+            { name: "Magi Gioielli", lat: 38.1232, lng: 13.3567, address: "Via Ruggero Settimo 45/47, 90139 Palermo", brands: ["Aquaforte"] },
+            { name: "Passalacqua Gioielleria", lat: 38.1462, lng: 13.0827, address: "Piazza Duomo 30, 90049 Terrasini (PA)", brands: ["Aquaforte", "Garmin"] },
+            { name: "Russo Gioielleria", lat: 37.7981, lng: 12.4336, address: "Via XI Maggio 144, 91025 Marsala (TP)", brands: ["Aquaforte"] },
+            { name: "Lattuca Gioielli", lat: 37.3111, lng: 13.5765, address: "Via Atenea 98/100, 92100 Agrigento", brands: ["Aquaforte", "Garmin"] },
+            { name: "Pluchino Gioielleria", lat: 36.9282, lng: 14.7255, address: "Via Roma 112, 97100 Ragusa", brands: ["Aquaforte"] },
+            { name: "Gioielleria Leonardo Meli", lat: 36.9455, lng: 14.6031, address: "Via della Resistenza 34, Comiso (RG)", brands: ["Aquaforte"] },
+            { name: "Salfo Gioielleria", lat: 36.9501, lng: 14.5348, address: "Via Cavour 317, Vittoria (RG)", brands: ["Aquaforte", "Giacomo Burroni"] },
+            { name: "Le Joye", lat: 36.8588, lng: 14.7608, address: "Via Sacro Cuore 32, 97015 Modica (RG)", brands: ["Aquaforte", "Giacomo Burroni", "Milor Jewels"] },
+            { name: "Spina Gioielli", lat: 37.5126, lng: 15.0883, address: "Via Vitt. Emanuele Orlando 6, 95126 Catania", brands: ["Aquaforte"] },
+            { name: "F.lli Maceli", lat: 38.1884, lng: 15.5535, address: "Via dei Mille 61/63, 98123 Messina", brands: ["Aquaforte", "Giacomo Burroni"] },
+            { name: "Branca Gioielli", lat: 38.1472, lng: 15.2135, address: "Via Roma 140, 98051 Barcellona P.G. (ME)", brands: ["Aquaforte"] },
+            { name: "Perdichizzi Gioiellerie", lat: 38.2185, lng: 15.2405, address: "Via Medici 6, Milazzo (ME)", brands: ["Garmin"] },
+            { name: "Befumo Gioielleria", lat: 38.1633, lng: 14.7431, address: "Piazza Matteotti 19, 98071 Capo D'Orlando", brands: ["Aquaforte"] },
+            { name: "Faugiana Gioielleria", lat: 38.0176, lng: 12.5161, address: "Via del Legno 183, Trapani", brands: ["Garmin", "Giacomo Burroni"] },
+            { name: "Centonze Gioiellieri", lat: 37.7985, lng: 12.4330, address: "Corso Giovanni Amendola 11, 91025 Marsala (TP)", brands: ["Milor Jewels"] },
+            { name: "Silver Key Gioielli", lat: 37.7990, lng: 12.4340, address: "Via Roma 199, 91025 Marsala (TP)", brands: ["Milor Jewels"] }
+        ];
+
+        // Creazione Marker Oro Personalizzato
+        const goldIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: "<div class='gold-marker'></div>",
+            iconSize: [16, 16],
+            iconAnchor: [8, 8],
+            popupAnchor: [0, -10]
+        });
+
+        // Inserimento dati nella mappa
+        stores.forEach(store => {
+            let brandsHtml = '';
+            if(store.brands && store.brands.length > 0) {
+                brandsHtml = store.brands.map(b => `<span class="popup-brand-badge">${b}</span>`).join('');
+            }
+
+            // Link corretto all'API di navigazione di Google Maps
+            const mapDirectionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${store.lat},${store.lng}`;
+
+            const popupContent = `
+                <div class="popup-title">${store.name}</div>
+                <div class="popup-address">📍 ${store.address}</div>
+                <div class="popup-brands">${brandsHtml}</div>
+                <a href="${mapDirectionsUrl}" target="_blank" rel="noopener noreferrer" class="popup-btn">Ottieni Indicazioni</a>
+            `;
+
+            L.marker([store.lat, store.lng], {icon: goldIcon})
+             .addTo(map)
+             .bindPopup(popupContent);
+        });
+    </script>
 </body>
 </html>
