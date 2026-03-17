@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Locator | Timeless Luxury Agency</title>
+    <style>
+        /* --- STILE ORIENTATO ALLA CONVERSIONE --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 25px 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            max-width: 450px;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        
+        /* HEADER CLIENTE */
+        .client-header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex; 
+            align-items: center;
+            justify-content: center;
+            gap: 15px; 
+        }
+        .client-header img.client-logo {
+            max-height: 45px; /* Leggermente aumentato per il nuovo logo */
+            width: auto;
+        }
+        .client-header-text {
+            text-align: left; 
+        }
+        .client-header h1 {
+            margin: 0;
+            font-size: 18px; /* Adattato per non andare a capo */
+            font-weight: 800;
+            color: #111;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .client-header p.subtitle {
+            color: #666;
+            margin: 3px 0 0 0;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-main {
+            background-color: #000;
+            color: white;
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .btn-main:active { transform: scale(0.98); background-color: #333; }
+
+        .hidden { display: none; }
+        
+        /* Card Risultato Singolo */
+        #result-area {
+            margin-top: 25px;
+            padding: 20px;
+            background: #ffffff;
+            border: 2px solid #000;
+            border-radius: 12px;
+            text-align: left;
+        }
+        
+        .store-title { margin: 0 0 8px 0; font-size: 20px; font-weight: 800; }
+        
+        /* Indirizzo cliccabile UX */
+        .address-link {
+            display: inline-block;
+            color: #0066cc;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            margin-bottom: 12px;
+            padding: 8px 0;
+        }
+        .address-link:hover { text-decoration: underline; }
+        .address-link::before { content: '📍 '; }
+
+        /* Marchi */
+        .brand-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .brand-badge {
+            background-color: #f1f3f5;
+            color: #333;
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid #e9ecef;
+        }
+
+        /* Lista Completa */
+        .full-list-item {
+            border-bottom: 1px solid #eee;
+            padding: 20px 0;
+            text-align: left;
+        }
+        .full-list-item:last-child { border-bottom: none; }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #666;
+            margin-top: 25px;
+            border: none;
+            text-decoration: underline;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* FOOTER OMNIA */
+        .omnia-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eaeaea;
+            text-align: center;
+        }
+        .omnia-footer p {
+            font-size: 10px;
+            color: #888;
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+        .omnia-logo {
+            max-width: 140px; 
+            height: auto;
+            margin-bottom: 15px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .omnia-contacts {
+            font-size: 13px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .omnia-contacts a {
+            color: #000;
+            text-decoration: none;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="client-header">
+            <img src="image_16f9a6.png" alt="Timeless Luxury Agency Logo" class="client-logo">
+            <div class="client-header-text">
+                <h1>Timeless Luxury<br>Agency</h1>
+                <p class="subtitle">Agente di commercio</p>
+            </div>
+        </div>
+
+        <button onclick="trovaNegozio()" class="btn-main" id="btn-cerca">
+            Trova il più vicino
+        </button>
+
+        <div id="status-msg" style="font-size:14px; margin-top:15px; color:#d93025; font-weight:600;"></div>
+
+        <div id="result-area" class="hidden">
+            <div style="font-size:12px; color:#000; font-weight:800; text-transform:uppercase; margin-bottom:8px; letter-spacing: 1px;">
+                Il più vicino a te (<span id="store-distance"></span> km)
+            </div>
+            <h2 id="store-name" class="store-title"></h2>
+            
+            <a id="store-address-link" href="#" target="_blank" class="address-link"></a>
+            
+            <div style="font-size: 13px; color: #666; font-weight: 600; margin-top: 10px;">MARCHI DISPONIBILI:</div>
+            <div id="store-brands" class="brand-container"></div>
+        </div>
+        
+        <button onclick="mostraListaCompleta()" class="btn-secondary">Sfoglia tutti i rivenditori</button>
+        <div id="lista-completa" class="hidden" style="margin-top:15px;"></div>
+
+        <div class="omnia-footer">
+            <p>Realizzato da</p>
+            <img src="logo OMNIA PNG.png" alt="Omnia Studio Logo" class="omnia-logo">
+            
+            <div class="omnia-contacts">
+                <a href="mailto:omniastudio.marketing@gmail.com">omniastudio.marketing@gmail.com</a><br>
+                <a href="tel:+393520854818">📞 +39 352 085 4818</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. DATI DEI CLIENTI (ORA 24 SEDI) ---
+        const stores = [
+            { name: "Alfano Gioielleria", lat: 38.1648, lng: 13.3308, address: "Via Mater Dolorosa 1, 90146 Palermo", brands: ["Aquaforte", "Milor Jewels", "Giacomo Burroni"] },
+            { name: "Sutera Gioiellerie dal 1902", lat: 38.1278, lng: 13.3533, address: "Via Enrico Parisi 29, 90133 Palermo", brands: ["Aquaforte"] },
+            { name: "Santoro Gioielli", lat: 38.1065, lng: 13.3330, address: "Corso Calatafimi 494/496, 90129 Palermo", brands: ["Aquaforte"] },
+            { name: "Gioielleria Gagliano", lat: 38.1189, lng: 13.3468, address: "Corso Finocchiaro Aprile 95, 90138 Palermo", brands: ["Garmin", "Aquaforte", "Giacomo Burroni"] },
+            { name: "Gioielleria Gagliano", lat: 38.1245, lng: 13.3536, address: "Piazza Castelnuovo 9, 90100 Palermo", brands: ["Garmin", "Aquaforte", "Giacomo Burroni"] },
+            { name: "Gioielleria Scaduto", lat: 38.0776, lng: 13.5082, address: "Corso Umberto I 67, 90011 Bagheria (PA)", brands: ["Aquaforte", "Garmin", "Milor Jewels", "Giacomo Burroni"] },
+            { name: "Mediterranea Gioielli", lat: 38.0386, lng: 14.0228, address: "Corso Ruggero, 90015 Cefalù (PA)", brands: ["Aquaforte", "Milor Jewels", "Giacomo Burroni"] },
+            { name: "Gioielleria D'Amico", lat: 38.0773, lng: 13.4444, address: "Viale Europa 188, 90039 Villabate (PA)", brands: ["Aquaforte"] },
+            { name: "Magi Gioielli", lat: 38.1232, lng: 13.3567, address: "Via Ruggero Settimo 45/47, 90139 Palermo", brands: ["Aquaforte"] },
+            { name: "Passalacqua Gioielleria", lat: 38.1462, lng: 13.0827, address: "Piazza Duomo 30, 90049 Terrasini (PA)", brands: ["Aquaforte", "Garmin"] },
+            { name: "Russo Gioielleria", lat: 37.7981, lng: 12.4336, address: "Via XI Maggio 144, 91025 Marsala (TP)", brands: ["Aquaforte"] },
+            { name: "Lattuca Gioielli", lat: 37.3111, lng: 13.5765, address: "Via Atenea 98/100, 92100 Agrigento", brands: ["Aquaforte", "Garmin"] },
+            { name: "Pluchino Gioielleria", lat: 36.9282, lng: 14.7255, address: "Via Roma 112, 97100 Ragusa", brands: ["Aquaforte"] },
+            { name: "Gioielleria Leonardo Meli", lat: 36.9455, lng: 14.6031, address: "Via della Resistenza 34, Comiso (RG)", brands: ["Aquaforte"] },
+            { name: "Salfo Gioielleria", lat: 36.9501, lng: 14.5348, address: "Via Cavour 317, Vittoria (RG)", brands: ["Aquaforte", "Giacomo Burroni"] },
+            { name: "Le Joye", lat: 36.8588, lng: 14.7608, address: "Via Sacro Cuore 32, 97015 Modica (RG)", brands: ["Aquaforte", "Giacomo Burroni", "Milor Jewels"] },
+            { name: "Spina Gioielli", lat: 37.5126, lng: 15.0883, address: "Via Vitt. Emanuele Orlando 6, 95126 Catania", brands: ["Aquaforte"] },
+            { name: "F.lli Maceli", lat: 38.1884, lng: 15.5535, address: "Via dei Mille 61/63, 98123 Messina", brands: ["Aquaforte", "Giacomo Burroni"] },
+            { name: "Branca Gioielli", lat: 38.1472, lng: 15.2135, address: "Via Roma 140, 98051 Barcellona P.G. (ME)", brands: ["Aquaforte"] },
+            { name: "Perdichizzi Gioiellerie", lat: 38.2185, lng: 15.2405, address: "Via Medici 6, Milazzo (ME)", brands: ["Garmin"] },
+            { name: "Befumo Gioielleria", lat: 38.1633, lng: 14.7431, address: "Piazza Matteotti 19, 98071 Capo D'Orlando", brands: ["Aquaforte"] },
+            { name: "Faugiana Gioielleria", lat: 38.0176, lng: 12.5161, address: "Via del Legno 183, Trapani", brands: ["Garmin", "Giacomo Burroni"] },
+            // Nuovi inserimenti
+            { name: "Centonze Gioiellieri", lat: 37.7985, lng: 12.4330, address: "Corso Giovanni Amendola 11, 91025 Marsala (TP)", brands: ["Milor Jewels"] },
+            { name: "Silver Key Gioielli", lat: 37.7990, lng: 12.4340, address: "Via Roma 199, 91025 Marsala (TP)", brands: ["Milor Jewels"] }
+        ];
+
+        // --- 2. LOGICA OPERATIVA ---
+        function generaLinkMaps(lat, lng) {
+            return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+        }
+
+        function trovaNegozio() {
+            const status = document.getElementById('status-msg');
+            const btn = document.getElementById('btn-cerca');
+            
+            if (!navigator.geolocation) {
+                status.innerHTML = "Errore: Browser non compatibile.";
+                return;
+            }
+
+            btn.innerHTML = "Localizzazione in corso...";
+            status.innerHTML = "";
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    calcolaPiuVicino(position.coords.latitude, position.coords.longitude);
+                    btn.innerHTML = "Trova il più vicino"; 
+                },
+                (error) => {
+                    status.innerHTML = "Posizione negata. Sfoglia la lista in basso.";
+                    btn.innerHTML = "Trova il più vicino";
+                    mostraListaCompleta();
+                },
+                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            );
+        }
+
+        function calcolaPiuVicino(lat, lng) {
+            const storesWithDist = stores.map(store => {
+                return { ...store, distance: getDistanceFromLatLonInKm(lat, lng, store.lat, store.lng) };
+            });
+
+            storesWithDist.sort((a, b) => a.distance - b.distance);
+            mostraRisultato(storesWithDist[0]);
+        }
+
+        function mostraRisultato(store) {
+            document.getElementById('result-area').classList.remove('hidden');
+            document.getElementById('lista-completa').classList.add('hidden');
+            
+            document.getElementById('store-name').innerText = store.name;
+            document.getElementById('store-distance').innerText = store.distance.toFixed(1);
+            
+            const addressLink = document.getElementById('store-address-link');
+            addressLink.innerText = store.address;
+            addressLink.href = generaLinkMaps(store.lat, store.lng);
+            
+            const brandsContainer = document.getElementById('store-brands');
+            brandsContainer.innerHTML = ""; 
+            
+            if(store.brands && store.brands.length > 0) {
+                store.brands.forEach(brand => {
+                    const badge = document.createElement('span');
+                    badge.className = 'brand-badge';
+                    badge.innerText = brand;
+                    brandsContainer.appendChild(badge);
+                });
+            }
+        }
+
+        function mostraListaCompleta() {
+            const listDiv = document.getElementById('lista-completa');
+            listDiv.innerHTML = "";
+            listDiv.classList.remove('hidden');
+            document.getElementById('result-area').classList.add('hidden');
+            
+            stores.forEach(store => {
+                const mapLink = generaLinkMaps(store.lat, store.lng);
+                
+                let brandsHtml = '';
+                if(store.brands && store.brands.length > 0) {
+                    brandsHtml = '<div class="brand-container" style="margin-top:6px;">' + 
+                        store.brands.map(b => `<span class="brand-badge" style="font-size:10px; padding:3px 6px;">${b}</span>`).join('') + 
+                        '</div>';
+                }
+
+                listDiv.innerHTML += `
+                    <div class="full-list-item">
+                        <h3 class="store-title" style="font-size:18px;">${store.name}</h3>
+                        <a href="${mapLink}" target="_blank" class="address-link" style="font-size:14px; margin-bottom:0;">${store.address}</a>
+                        ${brandsHtml}
+                    </div>
+                `;
+            });
+        }
+
+        // Calcolo Matematico Haversine
+        function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+            var R = 6371; 
+            var dLat = deg2rad(lat2-lat1);  
+            var dLon = deg2rad(lon2-lon1); 
+            var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+            return R * c;
+        }
+        function deg2rad(deg) { return deg * (Math.PI/180); }
+    </script>
+</body>
+</html>
