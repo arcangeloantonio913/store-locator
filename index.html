@@ -417,7 +417,7 @@
         }).addTo(map);
 
         // Database Clienti (24 Sedi esatte)
-        const stores = [
+        const FALLBACK_STORES = [
             { name: "Alfano Gioielleria", lat: 38.1648, lng: 13.3308, address: "Via Mater Dolorosa 1, 90146 Palermo", brands: ["Aquaforte", "Milor Jewels", "Giacomo Burroni"] },
             { name: "Sutera Gioiellerie dal 1902", lat: 38.1278, lng: 13.3533, address: "Via Enrico Parisi 29, 90133 Palermo", brands: ["Aquaforte"] },
             { name: "Santoro Gioielli", lat: 38.1065, lng: 13.3330, address: "Corso Calatafimi 494/496, 90129 Palermo", brands: ["Aquaforte"] },
@@ -456,8 +456,11 @@
         const markers = [];
         const storeListContainer = document.getElementById('store-list');
 
-        // Popolamento Mappa e Lista
-        stores.forEach((store, index) => {
+        // Popolamento Mappa e Lista (render riusabile: dati statici o dal DB)
+        function renderStores(stores) {
+          markers.length = 0;
+          storeListContainer.innerHTML = '';
+          stores.forEach((store, index) => {
             let brandsHtml = '';
             let cardBrandsHtml = '';
             
@@ -509,7 +512,53 @@
             });
 
             storeListContainer.appendChild(card);
-        });
+          });
+        }
+
+        // --- Caricamento dinamico dei punti vendita dal gestionale Omnia -----
+        // Legge i dati live via RPC pubblica (SECURITY DEFINER, sola lettura).
+        // Il proprietario li aggiorna dal portale; qui si riflettono da soli.
+        // Se la rete/DB non risponde, resta il dataset statico di fallback.
+        const OMNIA = {
+          url: "https://mihhditvmaivygljpvej.supabase.co",
+          anon: "sb_publishable_c8Dumm1eEWu2HG1T79T8Bw_AQSRVmXY",
+          slug: "timeless-luxury",
+        };
+
+        async function loadStores() {
+          const configured =
+            OMNIA.url.indexOf("__") === -1 && OMNIA.anon.indexOf("__") === -1;
+          if (!configured) {
+            renderStores(FALLBACK_STORES);
+            return;
+          }
+          try {
+            const res = await fetch(
+              OMNIA.url + "/rest/v1/rpc/timeless_public_locator",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  apikey: OMNIA.anon,
+                  Authorization: "Bearer " + OMNIA.anon,
+                },
+                body: JSON.stringify({ p_slug: OMNIA.slug }),
+              },
+            );
+            if (!res.ok) throw new Error("http " + res.status);
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+              renderStores(data);
+              return;
+            }
+            throw new Error("empty");
+          } catch (err) {
+            console.warn("[store-locator] fallback ai dati statici:", err);
+            renderStores(FALLBACK_STORES);
+          }
+        }
+
+        loadStores();
     </script>
 </body>
 </html>
