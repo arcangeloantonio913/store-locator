@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex" />
+<title>Timeless Luxury · Gestione Punti Vendita</title>
+<style>
+  :root {
+    --bg: #0a0a0a; --bg2: #0f0f0f; --panel: #151515; --line: rgba(212,175,55,.18);
+    --gold: #d4af37; --text: #f4f4f4; --muted: #a0a0a0; --muted2: #6a6a6a; --danger: #e06a6a;
+  }
+  * { box-sizing: border-box; }
+  body, html { margin: 0; padding: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  button { font-family: inherit; cursor: pointer; }
+  input, select, textarea { font-family: inherit; }
+  .hidden { display: none !important; }
+
+  /* --- Login --- */
+  .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+    background: radial-gradient(circle at 50% 30%, #2d1b15 0%, #050505 70%); }
+  .login-card { width: 100%; max-width: 380px; background: var(--bg2); border: 1px solid var(--line);
+    border-radius: 16px; padding: 32px 28px; text-align: center; }
+  .brandmark { font-weight: 800; letter-spacing: .28em; text-transform: uppercase; color: var(--gold); font-size: 15px; }
+  .brandsub { letter-spacing: .3em; text-transform: uppercase; color: var(--muted); font-size: 10px; margin-top: 6px; }
+  .login-card h1 { font-size: 16px; font-weight: 600; margin: 26px 0 4px; }
+  .login-card p { color: var(--muted); font-size: 13px; margin: 0 0 20px; }
+
+  .field { text-align: left; display: block; margin-bottom: 14px; }
+  .field > span { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-bottom: 6px; }
+  .input { width: 100%; background: var(--bg); border: 1px solid rgba(255,255,255,.15); border-radius: 10px;
+    padding: 10px 12px; color: var(--text); font-size: 14px; }
+  .input:focus { outline: none; border-color: var(--gold); }
+  .input::placeholder { color: var(--muted2); }
+
+  .btn-gold { background: var(--gold); color: #0a0a0a; border: none; border-radius: 10px; padding: 11px 18px;
+    font-weight: 700; font-size: 14px; width: 100%; }
+  .btn-gold:disabled { opacity: .6; cursor: default; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid rgba(255,255,255,.14);
+    border-radius: 10px; padding: 9px 14px; font-size: 13px; }
+  .btn-ghost:hover { color: var(--text); background: rgba(255,255,255,.05); }
+  .err { color: var(--danger); font-size: 13px; margin-top: 12px; min-height: 18px; }
+
+  /* --- App shell --- */
+  header.bar { position: sticky; top: 0; z-index: 20; background: rgba(5,5,5,.9); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line); }
+  .bar-inner { max-width: 940px; margin: 0 auto; display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+    padding: 14px 18px; }
+  .tabs { display: flex; gap: 4px; }
+  .tab { background: transparent; border: none; color: #c9c9c9; padding: 8px 14px; border-radius: 9px; font-size: 14px; }
+  .tab.active { background: rgba(212,175,55,.15); color: var(--gold); }
+  .spacer { margin-left: auto; }
+  .save-state { font-size: 12px; color: var(--muted); margin-right: 4px; }
+
+  main { max-width: 940px; margin: 0 auto; padding: 22px 18px 60px; }
+  .toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+  .toolbar h2 { font-size: 18px; margin: 0; }
+  .toolbar .sub { color: var(--muted); font-size: 13px; }
+  .search { flex: 1; min-width: 180px; }
+
+  .list { display: grid; gap: 10px; }
+  .card { background: rgba(255,255,255,.02); border: 1px solid rgba(255,255,255,.09); border-radius: 12px;
+    padding: 12px 14px; display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+  .card h3 { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+  .card .meta { color: var(--muted); font-size: 12px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+  .chip { font-size: 10px; color: var(--gold); border: 1px solid rgba(212,175,55,.35); border-radius: 5px; padding: 2px 6px; }
+  .pill { font-size: 10px; text-transform: uppercase; border-radius: 5px; padding: 2px 6px; }
+  .pill.off { background: rgba(255,255,255,.1); color: var(--muted); }
+  .pill.nomap { background: rgba(224,106,106,.15); color: var(--danger); }
+  .card-actions { display: flex; gap: 4px; flex-shrink: 0; }
+  .icon-btn { background: transparent; border: none; color: var(--muted); border-radius: 8px; padding: 6px 8px; font-size: 13px; }
+  .icon-btn:hover { background: rgba(255,255,255,.06); color: var(--text); }
+  .icon-btn.del:hover { background: rgba(224,106,106,.12); color: var(--danger); }
+  .empty { text-align: center; color: var(--muted); padding: 40px; border: 1px dashed rgba(255,255,255,.12); border-radius: 12px; }
+  .brand-logo { width: 34px; height: 34px; object-fit: contain; border-radius: 7px; background: #fff1; flex-shrink: 0; }
+  .brand-fallback { width: 34px; height: 34px; border-radius: 7px; background: var(--gold); color: #0a0a0a;
+    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; flex-shrink: 0; }
+
+  /* --- Modal --- */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.72); display: flex; align-items: center;
+    justify-content: center; padding: 16px; z-index: 50; }
+  .modal { width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; background: var(--bg2);
+    border: 1px solid var(--line); border-radius: 18px; padding: 22px; }
+  .modal h3 { margin: 0 0 16px; font-size: 17px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 70px 90px; gap: 8px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .brandpick { display: flex; flex-wrap: wrap; gap: 8px; }
+  .bp { border: 1px solid rgba(255,255,255,.15); color: #c9c9c9; border-radius: 9px; padding: 7px 11px; font-size: 12px; background: transparent; }
+  .bp.on { border-color: rgba(212,175,55,.6); background: rgba(212,175,55,.15); color: var(--gold); }
+  .adv { border: 1px solid rgba(255,255,255,.1); border-radius: 10px; padding: 10px; margin-top: 4px; }
+  .adv-hint { font-size: 11px; color: var(--muted2); margin: 4px 0 0; line-height: 1.5; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+  .check { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: #c9c9c9; }
+  .check input { accent-color: var(--gold); width: 16px; height: 16px; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--panel);
+    border: 1px solid var(--line); color: var(--text); padding: 10px 16px; border-radius: 10px; font-size: 13px; z-index: 80; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login" class="login-wrap">
+  <form class="login-card" id="loginForm" autocomplete="off">
+    <div class="brandmark">Timeless Luxury</div>
+    <div class="brandsub">Store Locator · Gestione</div>
+    <h1>Accedi</h1>
+    <p>Inserisci la password per gestire i punti vendita.</p>
+    <label class="field">
+      <span>Password</span>
+      <input class="input" type="password" id="pw" placeholder="••••••••" autocomplete="current-password" />
+    </label>
+    <button class="btn-gold" type="submit" id="loginBtn">Entra</button>
+    <div class="err" id="loginErr"></div>
+  </form>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <header class="bar">
+    <div class="bar-inner">
+      <div>
+        <div class="brandmark" style="font-size:13px">Timeless Luxury</div>
+        <div class="brandsub" style="font-size:9px">Store Locator · Admin</div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-view="stores">Punti Vendita</button>
+        <button class="tab" data-view="brands">Marchi</button>
+      </div>
+      <div class="spacer"></div>
+      <span class="save-state" id="saveState"></span>
+      <a class="btn-ghost" href="/" target="_blank" rel="noopener">Vedi sito</a>
+      <button class="btn-ghost" id="logoutBtn">Esci</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- STORES -->
+    <section id="view-stores">
+      <div class="toolbar">
+        <div>
+          <h2>Punti Vendita</h2>
+          <div class="sub" id="storesCount"></div>
+        </div>
+        <input class="input search" id="storeSearch" placeholder="Cerca per nome, indirizzo o città…" />
+        <button class="btn-gold" style="width:auto" id="addStore">+ Nuovo punto vendita</button>
+      </div>
+      <div class="list" id="storesList"></div>
+    </section>
+
+    <!-- BRANDS -->
+    <section id="view-brands" class="hidden">
+      <div class="toolbar">
+        <div>
+          <h2>Marchi</h2>
+          <div class="sub">I brand mostrati nei punti vendita e nel sito.</div>
+        </div>
+        <button class="btn-gold" style="width:auto" id="addBrand">+ Nuovo marchio</button>
+      </div>
+      <div class="list" id="brandsList"></div>
+    </section>
+  </main>
+</div>
+
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+const $ = (s, r=document) => r.querySelector(s);
+const esc = (s) => String(s==null?"":s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let PW = "";
+let state = { brands: [], stores: [] };
+let curView = "stores";
+let query = "";
+
+function uid(prefix){ return prefix + "_" + Math.random().toString(36).slice(2,9); }
+
+function toast(msg){
+  const t = document.createElement("div");
+  t.className = "toast"; t.textContent = msg;
+  $("#toastRoot").appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+function setSaving(s){ $("#saveState").textContent = s; }
+
+// --- API ---
+async function api(payload){
+  const res = await fetch("/api/admin", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-admin-password": PW },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || ("Errore " + res.status));
+  return data;
+}
+
+// Persiste l'intero dataset; il server geocodifica i punti senza coordinate.
+async function persist(){
+  setSaving("Salvataggio…");
+  try {
+    const r = await api({ action: "save", brands: state.brands, stores: state.stores });
+    state.brands = r.brands; state.stores = r.stores;
+    setSaving("Salvato ✓");
+    setTimeout(() => setSaving(""), 1800);
+    render();
+    return true;
+  } catch (e) {
+    setSaving("");
+    toast("Errore salvataggio: " + e.message);
+    return false;
+  }
+}
+
+// --- Login ---
+$("#loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const pw = $("#pw").value;
+  if (!pw) return;
+  $("#loginBtn").disabled = true; $("#loginErr").textContent = "";
+  try {
+    PW = pw;
+    const d = await api({ action: "load" });
+    state.brands = d.brands || []; state.stores = d.stores || [];
+    sessionStorage.setItem("tl_pw", pw);
+    $("#login").classList.add("hidden");
+    $("#app").classList.remove("hidden");
+    if (!d.storageReady) toast("Nota: lo storage KV non è ancora collegato — i salvataggi falliranno finché non viene configurato.");
+    render();
+  } catch (err) {
+    PW = "";
+    $("#loginErr").textContent = err.message;
+  } finally {
+    $("#loginBtn").disabled = false;
+  }
+});
+
+$("#logoutBtn").addEventListener("click", () => {
+  sessionStorage.removeItem("tl_pw"); PW = "";
+  $("#app").classList.add("hidden"); $("#login").classList.remove("hidden");
+  $("#pw").value = "";
+});
+
+// Tabs
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+  curView = t.dataset.view;
+  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x === t));
+  $("#view-stores").classList.toggle("hidden", curView !== "stores");
+  $("#view-brands").classList.toggle("hidden", curView !== "brands");
+}));
+
+$("#storeSearch").addEventListener("input", (e) => { query = e.target.value.toLowerCase().trim(); renderStores(); });
+$("#addStore").addEventListener("click", () => storeModal(null));
+$("#addBrand").addEventListener("click", () => brandModal(null));
+
+// --- Render ---
+function render(){ renderStores(); renderBrands(); }
+
+function renderStores(){
+  const list = $("#storesList");
+  $("#storesCount").textContent = state.stores.length + " gioiellerie · le modifiche aggiornano lo store locator pubblico.";
+  let items = state.stores;
+  if (query) items = items.filter(s =>
+    (s.name||"").toLowerCase().includes(query) ||
+    (s.address||"").toLowerCase().includes(query) ||
+    (s.city||"").toLowerCase().includes(query));
+  if (!items.length) {
+    list.innerHTML = '<div class="empty">' + (query ? "Nessun risultato." : "Nessun punto vendita. Aggiungi il primo.") + '</div>';
+    return;
+  }
+  list.innerHTML = items.map(s => {
+    const noMap = (s.lat == null || s.lng == null);
+    const chips = (s.brands||[]).map(b => '<span class="chip">' + esc(b) + '</span>').join("");
+    return '<div class="card"><div style="min-width:0">' +
+      '<h3>' + esc(s.name) +
+        (s.status === "inactive" ? ' <span class="pill off">Nascosto</span>' : "") +
+        (noMap ? ' <span class="pill nomap">no mappa</span>' : "") + '</h3>' +
+      '<div class="meta">📍 ' + esc(s.address) + '</div>' +
+      (s.phone ? '<div class="meta">☎ ' + esc(s.phone) + '</div>' : "") +
+      (chips ? '<div class="chips">' + chips + '</div>' : "") +
+      '</div><div class="card-actions">' +
+      '<button class="icon-btn" data-edit="' + s.id + '">✎</button>' +
+      '<button class="icon-btn del" data-del="' + s.id + '">🗑</button>' +
+      '</div></div>';
+  }).join("");
+  list.querySelectorAll("[data-edit]").forEach(b => b.addEventListener("click", () => storeModal(b.dataset.edit)));
+  list.querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", () => delStore(b.dataset.del)));
+}
+
+function renderBrands(){
+  const list = $("#brandsList");
+  if (!state.brands.length) { list.innerHTML = '<div class="empty">Nessun marchio. Aggiungi il primo brand.</div>'; return; }
+  const sorted = [...state.brands].sort((a,b) => (a.sort||0)-(b.sort||0));
+  list.innerHTML = sorted.map(b => {
+    const logo = b.logo
+      ? '<img class="brand-logo" src="' + esc(b.logo) + '" alt="' + esc(b.name) + '" onerror="this.style.display=\'none\'" />'
+      : '<div class="brand-fallback">' + esc((b.name||"?").slice(0,2).toUpperCase()) + '</div>';
+    return '<div class="card"><div style="display:flex;gap:10px;align-items:center;min-width:0">' + logo +
+      '<div><h3>' + esc(b.name) + '</h3><div class="meta">' + (b.active === false ? "Nascosto" : "Attivo") + '</div></div>' +
+      '</div><div class="card-actions">' +
+      '<button class="icon-btn" data-ebrand="' + b.id + '">✎</button>' +
+      '<button class="icon-btn del" data-dbrand="' + b.id + '">🗑</button>' +
+      '</div></div>';
+  }).join("");
+  list.querySelectorAll("[data-ebrand]").forEach(x => x.addEventListener("click", () => brandModal(x.dataset.ebrand)));
+  list.querySelectorAll("[data-dbrand]").forEach(x => x.addEventListener("click", () => delBrand(x.dataset.dbrand)));
+}
+
+// --- Store modal ---
+function storeModal(id){
+  const editing = id ? state.stores.find(s => s.id === id) : null;
+  const s = editing ? { ...editing } : { id: uid("s"), name:"", address:"", city:"", province:"", cap:"", phone:"", status:"active", brands:[], lat:null, lng:null };
+  const origAddr = editing ? (editing.address||"") : "";
+  const brandOpts = [...state.brands].sort((a,b)=>(a.sort||0)-(b.sort||0));
+  const hasCoords = s.lat != null && s.lng != null;
+
+  const root = $("#modalRoot");
+  root.innerHTML =
+    '<div class="overlay" id="ov"><div class="modal">' +
+    '<h3>' + (editing ? "Modifica punto vendita" : "Nuovo punto vendita") + '</h3>' +
+    '<label class="field"><span>Nome gioielleria *</span><input class="input" id="f_name" value="' + esc(s.name) + '" placeholder="Es. Alfano Gioielleria" /></label>' +
+    '<label class="field"><span>Indirizzo *</span><input class="input" id="f_addr" value="' + esc(s.address) + '" placeholder="Via, numero, città" /></label>' +
+    '<div class="grid3">' +
+      '<label class="field"><span>Città</span><input class="input" id="f_city" value="' + esc(s.city) + '" /></label>' +
+      '<label class="field"><span>Prov.</span><input class="input" id="f_prov" maxlength="4" value="' + esc(s.province) + '" /></label>' +
+      '<label class="field"><span>CAP</span><input class="input" id="f_cap" value="' + esc(s.cap) + '" /></label>' +
+    '</div>' +
+    '<div class="grid2">' +
+      '<label class="field"><span>Telefono</span><input class="input" id="f_phone" value="' + esc(s.phone) + '" /></label>' +
+      '<label class="field"><span>Stato</span><select class="input" id="f_status">' +
+        '<option value="active"' + (s.status !== "inactive" ? " selected" : "") + '>Visibile</option>' +
+        '<option value="inactive"' + (s.status === "inactive" ? " selected" : "") + '>Nascosto</option>' +
+      '</select></label>' +
+    '</div>' +
+    '<div class="field"><span>Marchi trattati</span><div class="brandpick" id="f_brands">' +
+      (brandOpts.length ? brandOpts.map(b =>
+        '<button type="button" class="bp' + ((s.brands||[]).includes(b.name) ? " on" : "") + '" data-b="' + esc(b.name) + '">' + esc(b.name) + '</button>'
+      ).join("") : '<span class="adv-hint">Nessun marchio: aggiungilo dalla sezione Marchi.</span>') +
+    '</div></div>' +
+    '<div class="adv">' +
+      '<label class="check"><input type="checkbox" id="f_regeo" ' + (hasCoords ? "" : "checked") + ' /> Calcola la posizione sulla mappa dall\'indirizzo</label>' +
+      '<p class="adv-hint">Consigliato. Togli la spunta solo per inserire tu le coordinate esatte qui sotto.</p>' +
+      '<div class="grid2" id="f_coords" style="' + (hasCoords ? "" : "display:none") + '">' +
+        '<label class="field"><span>Latitudine</span><input class="input" id="f_lat" value="' + (s.lat!=null?s.lat:"") + '" inputmode="decimal" /></label>' +
+        '<label class="field"><span>Longitudine</span><input class="input" id="f_lng" value="' + (s.lng!=null?s.lng:"") + '" inputmode="decimal" /></label>' +
+      '</div>' +
+    '</div>' +
+    '<div class="modal-actions"><button class="btn-ghost" id="m_cancel">Annulla</button>' +
+    '<button class="btn-gold" style="width:auto" id="m_save">Salva</button></div>' +
+    '</div></div>';
+
+  const selected = new Set(s.brands || []);
+  root.querySelectorAll(".bp").forEach(btn => btn.addEventListener("click", () => {
+    const name = btn.dataset.b;
+    if (selected.has(name)) { selected.delete(name); btn.classList.remove("on"); }
+    else { selected.add(name); btn.classList.add("on"); }
+  }));
+  const regeo = $("#f_regeo");
+  regeo.addEventListener("change", () => { $("#f_coords").style.display = regeo.checked ? "none" : ""; });
+
+  const close = () => { root.innerHTML = ""; };
+  $("#ov").addEventListener("click", (e) => { if (e.target.id === "ov") close(); });
+  $("#m_cancel").addEventListener("click", close);
+  $("#m_save").addEventListener("click", async () => {
+    const name = $("#f_name").value.trim();
+    const address = $("#f_addr").value.trim();
+    if (!name) { toast("Il nome è obbligatorio."); return; }
+    if (address.length < 4) { toast("Indirizzo obbligatorio."); return; }
+    s.name = name; s.address = address;
+    s.city = $("#f_city").value.trim();
+    s.province = $("#f_prov").value.trim();
+    s.cap = $("#f_cap").value.trim();
+    s.phone = $("#f_phone").value.trim();
+    s.status = $("#f_status").value;
+    s.brands = [...selected];
+    const addrChanged = address !== origAddr;
+    if (regeo.checked || addrChanged) {
+      s.lat = null; s.lng = null; // -> il server geocodifica
+    } else {
+      const lat = parseFloat($("#f_lat").value), lng = parseFloat($("#f_lng").value);
+      s.lat = Number.isFinite(lat) ? lat : null;
+      s.lng = Number.isFinite(lng) ? lng : null;
+    }
+    // Applica a state
+    const idx = state.stores.findIndex(x => x.id === s.id);
+    if (idx >= 0) state.stores[idx] = s; else state.stores.push(s);
+    close();
+    const ok = await persist();
+    if (ok) toast(editing ? "Punto vendita aggiornato." : "Punto vendita aggiunto.");
+  });
+}
+
+async function delStore(id){
+  const s = state.stores.find(x => x.id === id);
+  if (!s || !confirm('Eliminare "' + s.name + '"?')) return;
+  state.stores = state.stores.filter(x => x.id !== id);
+  const ok = await persist();
+  if (ok) toast("Eliminato.");
+}
+
+// --- Brand modal ---
+function brandModal(id){
+  const editing = id ? state.brands.find(b => b.id === id) : null;
+  const b = editing ? { ...editing } : { id: uid("b"), name:"", logo:"", active:true, sort:(state.brands.length+1) };
+  const root = $("#modalRoot");
+  root.innerHTML =
+    '<div class="overlay" id="ov"><div class="modal" style="max-width:420px">' +
+    '<h3>' + (editing ? "Modifica marchio" : "Nuovo marchio") + '</h3>' +
+    '<label class="field"><span>Nome *</span><input class="input" id="b_name" value="' + esc(b.name) + '" placeholder="Es. Aquaforte" /></label>' +
+    '<label class="field"><span>URL logo (opzionale)</span><input class="input" id="b_logo" value="' + esc(b.logo) + '" placeholder="/assets/logo-aquaforte.png" /></label>' +
+    '<div class="grid2">' +
+      '<label class="field"><span>Ordine</span><input class="input" id="b_sort" type="number" value="' + (b.sort||0) + '" /></label>' +
+      '<label class="field" style="justify-content:flex-end"><span>&nbsp;</span><label class="check"><input type="checkbox" id="b_active" ' + (b.active !== false ? "checked" : "") + ' /> Visibile</label></label>' +
+    '</div>' +
+    '<div class="modal-actions"><button class="btn-ghost" id="b_cancel">Annulla</button>' +
+    '<button class="btn-gold" style="width:auto" id="b_save">Salva</button></div>' +
+    '</div></div>';
+  const close = () => { root.innerHTML = ""; };
+  $("#ov").addEventListener("click", (e) => { if (e.target.id === "ov") close(); });
+  $("#b_cancel").addEventListener("click", close);
+  $("#b_save").addEventListener("click", async () => {
+    const name = $("#b_name").value.trim();
+    if (!name) { toast("Il nome è obbligatorio."); return; }
+    const oldName = editing ? editing.name : null;
+    b.name = name; b.logo = $("#b_logo").value.trim();
+    b.sort = parseInt($("#b_sort").value, 10) || 0;
+    b.active = $("#b_active").checked;
+    const idx = state.brands.findIndex(x => x.id === b.id);
+    if (idx >= 0) state.brands[idx] = b; else state.brands.push(b);
+    // Propaga il rename ai punti vendita che usano il vecchio nome.
+    if (oldName && oldName !== name) {
+      state.stores.forEach(s => { s.brands = (s.brands||[]).map(n => n === oldName ? name : n); });
+    }
+    close();
+    const ok = await persist();
+    if (ok) toast(editing ? "Marchio aggiornato." : "Marchio aggiunto.");
+  });
+}
+
+async function delBrand(id){
+  const b = state.brands.find(x => x.id === id);
+  if (!b || !confirm('Eliminare il marchio "' + b.name + '"? Verrà rimosso anche dai punti vendita.')) return;
+  state.brands = state.brands.filter(x => x.id !== id);
+  state.stores.forEach(s => { s.brands = (s.brands||[]).filter(n => n !== b.name); });
+  const ok = await persist();
+  if (ok) toast("Marchio eliminato.");
+}
+
+// Auto-login se la password è in sessione.
+(async function(){
+  const saved = sessionStorage.getItem("tl_pw");
+  if (!saved) return;
+  try {
+    PW = saved;
+    const d = await api({ action: "load" });
+    state.brands = d.brands || []; state.stores = d.stores || [];
+    $("#login").classList.add("hidden"); $("#app").classList.remove("hidden");
+    render();
+  } catch { PW = ""; sessionStorage.removeItem("tl_pw"); }
+})();
+</script>
+</body>
+</html>

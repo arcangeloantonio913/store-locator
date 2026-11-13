@@ -515,40 +515,17 @@
           });
         }
 
-        // --- Caricamento dinamico dei punti vendita dal gestionale Omnia -----
-        // Legge i dati live via RPC pubblica (SECURITY DEFINER, sola lettura).
-        // Il proprietario li aggiorna dal portale; qui si riflettono da soli.
-        // Se la rete/DB non risponde, resta il dataset statico di fallback.
-        const OMNIA = {
-          url: "https://mihhditvmaivygljpvej.supabase.co",
-          anon: "sb_publishable_c8Dumm1eEWu2HG1T79T8Bw_AQSRVmXY",
-          slug: "timeless-luxury",
-        };
-
+        // --- Caricamento dinamico dei punti vendita (API interna /api/data) ---
+        // L'owner aggiorna i dati dal pannello /admin; qui si riflettono da soli.
+        // Se l'API non risponde, resta il dataset statico di fallback.
         async function loadStores() {
-          const configured =
-            OMNIA.url.indexOf("__") === -1 && OMNIA.anon.indexOf("__") === -1;
-          if (!configured) {
-            renderStores(FALLBACK_STORES);
-            return;
-          }
           try {
-            const res = await fetch(
-              OMNIA.url + "/rest/v1/rpc/timeless_public_locator",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  apikey: OMNIA.anon,
-                  Authorization: "Bearer " + OMNIA.anon,
-                },
-                body: JSON.stringify({ p_slug: OMNIA.slug }),
-              },
-            );
+            const res = await fetch("/api/data", { cache: "no-store" });
             if (!res.ok) throw new Error("http " + res.status);
             const data = await res.json();
-            if (Array.isArray(data) && data.length > 0) {
-              renderStores(data);
+            const stores = Array.isArray(data && data.stores) ? data.stores : [];
+            if (stores.length > 0) {
+              renderStores(stores);
               return;
             }
             throw new Error("empty");
