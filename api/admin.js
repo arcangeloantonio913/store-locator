@@ -5,7 +5,6 @@
 // Auth: header 'x-admin-password' o body.password == process.env.ADMIN_PASSWORD.
 
 const { readData, writeData, isConfigured } = require("../lib/store");
-const { geocodeAddress } = require("../lib/geocode");
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
@@ -49,26 +48,13 @@ module.exports = async (req, res) => {
       const brands = Array.isArray(body.brands) ? body.brands : [];
       const stores = Array.isArray(body.stores) ? body.stores : [];
 
-      // Geocodifica i punti vendita senza coordinate (indirizzo nuovo/cambiato).
+      // La geocodifica avviene lato browser (admin.html, rete dell'owner).
+      // Qui normalizziamo solo le coordinate a numero o null e persistiamo.
       for (const s of stores) {
-        const missing =
-          s.lat == null || s.lng == null || s.lat === "" || s.lng === "";
-        if (missing && s.address) {
-          const full = [s.address, s.cap, s.city, s.province]
-            .filter(Boolean)
-            .join(" ");
-          const g = await geocodeAddress(full || s.address);
-          if (g) {
-            s.lat = g.lat;
-            s.lng = g.lng;
-          } else {
-            s.lat = null;
-            s.lng = null;
-          }
-        } else if (!missing) {
-          s.lat = Number(s.lat);
-          s.lng = Number(s.lng);
-        }
+        const lat = Number(s.lat);
+        const lng = Number(s.lng);
+        s.lat = s.lat === "" || s.lat == null || !Number.isFinite(lat) ? null : lat;
+        s.lng = s.lng === "" || s.lng == null || !Number.isFinite(lng) ? null : lng;
       }
 
       await writeData({ brands, stores });
