@@ -176,6 +176,22 @@ let query = "";
 
 function uid(prefix){ return prefix + "_" + Math.random().toString(36).slice(2,9); }
 
+// Geocodifica lato browser (Nominatim): gira dalla rete dell'owner, non dagli
+// IP cloud di Vercel (che Nominatim blocca). È la via primaria e precisa.
+async function geocodeClient(q){
+  const query = (q || "").trim();
+  if (query.length < 4) return null;
+  try {
+    const url = "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=it&q=" + encodeURIComponent(query);
+    const r = await fetch(url, { headers: { "Accept-Language": "it" } });
+    if (!r.ok) return null;
+    const a = await r.json();
+    if (!Array.isArray(a) || !a.length) return null;
+    const lat = parseFloat(a[0].lat), lng = parseFloat(a[0].lon);
+    return (Number.isFinite(lat) && Number.isFinite(lng)) ? { lat, lng } : null;
+  } catch { return null; }
+}
+
 function toast(msg){
   const t = document.createElement("div");
   t.className = "toast"; t.textContent = msg;
@@ -375,8 +391,16 @@ function storeModal(id){
     s.status = $("#f_status").value;
     s.brands = [...selected];
     const addrChanged = address !== origAddr;
+    const saveBtn = $("#m_save");
     if (regeo.checked || addrChanged) {
-      s.lat = null; s.lng = null; // -> il server geocodifica
+      // Geocodifica subito dal browser (precisa, non bloccata). Se fallisce,
+      // lascio null: il server proverà con Photon come rete di sicurezza.
+      saveBtn.disabled = true; saveBtn.textContent = "Calcolo posizione…";
+      const full = [address, s.cap, s.city, s.province].filter(Boolean).join(" ");
+      const g = await geocodeClient(full);
+      s.lat = g ? g.lat : null;
+      s.lng = g ? g.lng : null;
+      saveBtn.textContent = "Salvataggio…";
     } else {
       const lat = parseFloat($("#f_lat").value), lng = parseFloat($("#f_lng").value);
       s.lat = Number.isFinite(lat) ? lat : null;
@@ -387,7 +411,14 @@ function storeModal(id){
     if (idx >= 0) state.stores[idx] = s; else state.stores.push(s);
     close();
     const ok = await persist();
-    if (ok) toast(editing ? "Punto vendita aggiornato." : "Punto vendita aggiunto.");
+    if (ok) {
+      const saved = state.stores.find(x => x.id === s.id);
+      if (saved && (saved.lat == null || saved.lng == null)) {
+        toast("Salvato, ma non ho trovato la posizione sulla mappa: aprilo e inserisci le coordinate a mano (sezione avanzata).");
+      } else {
+        toast(editing ? "Punto vendita aggiornato." : "Punto vendita aggiunto.");
+      }
+    }
   });
 }
 
